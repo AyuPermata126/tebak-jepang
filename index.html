@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Kata Kerja Jepang</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #ec4899; --primary-dark: #be185d; --secondary: #d946ef; --success: #10b981; --danger: #ef4444; --text: #831843; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text); }
+        .container { background: #fff; border-radius: 24px; box-shadow: 0 20px 50px rgba(236, 72, 153, 0.15); width: 100%; max-width: 500px; padding: 40px 30px; text-align: center; position: relative; overflow: hidden; }
+        .container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+        .header-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.9rem; }
+        .user-badge { background: #fce7f3; padding: 8px 15px; border-radius: 20px; color: var(--primary-dark); font-weight: 600; }
+        .nav-link { color: var(--primary-dark); text-decoration: none; font-weight: 600; margin-left: 10px; cursor: pointer; }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; color: var(--primary-dark); }
+        .subtitle { font-size: 0.9rem; color: #db2777; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 5px; color: #831843; font-weight: 600; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px 15px; border: 2px solid #fbcfe8; border-radius: 10px; font-size: 1rem; color: #831843; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .btn { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3); }
+
+        .group-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .group-card { display: block; background: #fce7f3; border: 2px solid #f9a8d4; padding: 20px; border-radius: 16px; text-decoration: none; color: var(--primary-dark); transition: all 0.3s ease; cursor: pointer; }
+        .group-card:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(236, 72, 153, 0.2); }
+        .group-card h3 { font-size: 1.2rem; margin-bottom: 5px; }
+        .group-card p { font-size: 0.8rem; opacity: 0.9; }
+
+        .score-board { display: flex; justify-content: space-between; background: #fce7f3; padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; font-weight: 600; color: var(--primary-dark); }
+        .score-board span { color: var(--primary); font-weight: 800; }
+        .timer-bar { background: var(--primary); color: white; padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 1.8rem; font-weight: 800; transition: all 0.3s ease; }
+        .timer-bar.warning { background: var(--danger); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .question-box { margin-bottom: 30px; }
+        .question-label { font-size: 0.9rem; color: #db2777; margin-bottom: 10px; }
+        .question-text { font-size: 2rem; font-weight: 700; color: var(--primary-dark); padding: 20px; background: #fce7f3; border-radius: 16px; border: 2px dashed #f9a8d4; word-wrap: break-word; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .option-btn { background: #fff; border: 2px solid #fbcfe8; padding: 18px 10px; border-radius: 12px; font-family: 'Noto Sans JP', sans-serif; font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 700; color: var(--text); cursor: pointer; transition: all 0.2s ease; word-break: break-all; }
+        .option-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(236, 72, 153, 0.2); background: #fff0f8; }
+        .option-btn.correct { background: var(--success); border-color: var(--success); color: #fff; animation: pop 0.3s ease; }
+        .option-btn.wrong { background: var(--danger); border-color: var(--danger); color: #fff; animation: shake 0.4s ease; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(131, 24, 67, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; animation: fadeIn 0.3s ease; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: #fff; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 380px; width: 90%; animation: slideUp 0.4s ease; border-top: 8px solid var(--danger); }
+        .modal-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .modal-title { font-size: 1.5rem; font-weight: 800; color: var(--danger); margin-bottom: 10px; }
+        .modal-text { font-size: 1rem; color: #64748b; margin-bottom: 25px; line-height: 1.5; }
+        .modal-text b { font-family: 'Noto Sans JP', sans-serif; color: var(--primary-dark); font-size: 1.2rem; }
+        .modal-btn { background: var(--primary); color: #fff; border: none; padding: 12px 30px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3); text-decoration: none; display: inline-block; margin: 5px; }
+        .modal-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .modal-btn.success { background: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .modal-btn.success:hover { background: #059669; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .copyright { margin-top: 30px; font-size: 0.75rem; color: #db2777; opacity: 0.7; font-weight: 600; letter-spacing: 0.5px; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #fce7f3; font-size: 0.9rem; }
+        th { background: #fce7f3; color: var(--primary-dark); }
+        .review-item { background: #fff; border: 2px solid #fee2e2; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .question-row { font-weight: 600; margin-bottom: 10px; color: #831843; }
+        .answer-row { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px dashed #fbcfe8; font-family: 'Noto Sans JP', sans-serif; }
+        .wrong-text { color: var(--danger); font-weight: 700; text-decoration: line-through; }
+        .correct-text { color: var(--success); font-weight: 700; }
+        .label-tag { font-size: 0.75rem; color: #64748b; font-family: 'Poppins', sans-serif; display: block; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="appView">
+            <!-- Konten akan diisi oleh JavaScript -->
+        </div>
+        <div class="copyright">© Copyright by sultbabies</div>
+    </div>
+
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-box">
+            <div class="modal-icon" id="alertIcon">❌</div>
+            <h2 class="modal-title" id="alertTitle">Jawaban Salah!</h2>
+            <p class="modal-text">Jawaban yang benar adalah:<br><b id="correctAnswer"></b></p>
+            <button class="modal-btn" id="retryBtn">Lanjut</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="finishModal">
+        <div class="modal-box" style="border-top-color: var(--success);">
+            <div class="modal-icon">🎉</div>
+            <h2 class="modal-title" style="color: var(--success);">Permainan Selesai!</h2>
+            <p class="modal-text">Nilai kamu: <br><b id="finalScore" style="font-size: 2rem; color: var(--primary-dark);"></b></p>
+            <button class="modal-btn" onclick="showView('groups')">Ganti Kelompok</button>
+            <button class="modal-btn success" onclick="showView('history')">Lihat Pembahasan</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Kelompok
+        const group1 = [
+            { id: "bertemu, berjumpa", jp: "あいます" }, { id: "bermain", jp: "あそびます" }, { id: "mencuci (tangan)", jp: "あらいます" }, { id: "ada", jp: "あります" }, { id: "berjalan kaki", jp: "あるきます" }, { id: "berkata, mengatakan", jp: "いいます" }, { id: "pergi", jp: "いきます" }, { id: "terburu-buru", jp: "いそぎます" }, { id: "memerlukan", jp: "いります" }, { id: "bergerak, berputar", jp: "うごきます" }, { id: "menyanyi", jp: "うたいます" }, { id: "menjual", jp: "うります" }, { id: "meletakkan", jp: "おきます" }, { id: "mengirim, mengantar", jp: "おくります" }, { id: "menekan, mendorong", jp: "おします" }, { id: "mengira, merasa", jp: "おもいます" }, { id: "teringat", jp: "おもいだします" }, { id: "berenang", jp: "およぎます" }, { id: "habis, selesai", jp: "おわります" }, { id: "membeli", jp: "かいます" }, { id: "mengembalikan", jp: "かえします" }, { id: "pulang, kembali", jp: "かえります" }, { id: "memerlukan (waktu)", jp: "かかります" }, { id: "menulis, menggambar", jp: "かきます" }, { id: "meminjamkan", jp: "かします" }, { id: "menang", jp: "かちます" }, { id: "memakai (topi)", jp: "かぶります" }, { id: "mendengar, bertanya", jp: "ききます" }, { id: "memotong, menggunting", jp: "きります" }, { id: "mematikan, memadamkan", jp: "けします" }, { id: "menyentuh, memegang", jp: "さわります" }, { id: "tahu, mengetahui", jp: "しります" }, { id: "merokok, menghisap", jp: "すいます" }, { id: "tinggal, bermukim", jp: "すみます" }, { id: "duduk", jp: "すわります" }, { id: "berdiri", jp: "たちます" }, { id: "mengeluarkan, mengirim", jp: "だします" }, { id: "memakai, menggunakan", jp: "つかいます" }, { id: "tiba, sampai", jp: "つきます" }, { id: "membuat, memproduksi", jp: "つくります" }, { id: "pergi mengantar (orang)", jp: "つれていきます" }, { id: "membantu", jp: "てつだいます" }, { id: "menginap, bermalam", jp: "とまります" }, { id: "mengambil, memotret", jp: "とります" }, { id: "memperbaiki", jp: "なおします" }, { id: "hilang, kehilangan", jp: "なくします" }, { id: "belajar", jp: "ならいます" }, { id: "menjadi", jp: "なります" }, { id: "membuka, melepaskan", jp: "ぬぎます" }, { id: "mendaki", jp: "のぼります" }, { id: "minum", jp: "のみます" }, { id: "naik", jp: "のります" }, { id: "masuk", jp: "はいります" }, { id: "memakai (sepatu, celana)", jp: "はきます" }, { id: "bekerja", jp: "はたらきます" }, { id: "menarik", jp: "ひきます" }, { id: "turun (hujan, salju)", jp: "ふります" }, { id: "membayar", jp: "はらいます" }, { id: "berbicara", jp: "はなします" }, { id: "belok (kiri, kanan)", jp: "まがります" }, { id: "menunggu", jp: "まちます" }, { id: "memutar", jp: "まわします" }, { id: "memegang, membawa", jp: "もちます" }, { id: "pergi membawa", jp: "もっていきます" }, { id: "menerima", jp: "もらいます" }, { id: "berguna, bermanfaat", jp: "やくにたちます" }, { id: "beristirahat", jp: "やすみます" }, { id: "memanggil", jp: "よびます" }, { id: "membaca", jp: "よみます" }, { id: "mengerti", jp: "わかります" }, { id: "menyeberang", jp: "わたります" }
+        ];
+        const group2 = [
+            { id: "membuka", jp: "あけます" }, { id: "memberikan", jp: "あげます" }, { id: "mengumpulkan", jp: "あつめます" }, { id: "mandi", jp: "あびます" }, { id: "ada (manusia/hewan)", jp: "います" }, { id: "memasukkan", jp: "いれます" }, { id: "lahir, dilahirkan", jp: "うまれます" }, { id: "bangun (tidur)", jp: "おきます" }, { id: "mengajar, memberitahukan", jp: "おしえます" }, { id: "mengingat, menghafal", jp: "おぼえます" }, { id: "turun (dari kendaraan)", jp: "おります" }, { id: "mengganti, menukar", jp: "かえます" }, { id: "menelepon, memakai", jp: "かけます" }, { id: "memikirkan", jp: "かんがえます" }, { id: "berhati-hati", jp: "きをつけます" }, { id: "memakai (pakaian)", jp: "きます" }, { id: "memberi (kepada saya)", jp: "くれます" }, { id: "menutup", jp: "しめます" }, { id: "memeriksa, menyelidiki", jp: "しらべます" }, { id: "membuang", jp: "すてます" }, { id: "makan", jp: "たべます" }, { id: "cukup, mencukupi", jp: "たります" }, { id: "capek, lelah", jp: "つかれます" }, { id: "menyalakan", jp: "つけます" }, { id: "pergi keluar", jp: "でかけます" }, { id: "dapat, bisa, mampu", jp: "できます" }, { id: "keluar", jp: "でます" }, { id: "menghentikan", jp: "とめます" }, { id: "tidur", jp: "ねます" }, { id: "ganti kendaraan", jp: "のりかえます" }, { id: "memulai", jp: "はじめます" }, { id: "kalah", jp: "まけます" }, { id: "memperlihatkan", jp: "みせます" }, { id: "melihat, menonton", jp: "みます" }, { id: "menjemput", jp: "むかえます" }, { id: "berhenti, meninggalkan", jp: "やめます" }, { id: "lupa", jp: "わすれます" }
+        ];
+        const group3 = [
+            { id: "mengantarkan melihat-lihat", jp: "あんないします" }, { id: "mengemudikan, menjalankan", jp: "うんてんします" }, { id: "berbelanja", jp: "かいものします" }, { id: "datang", jp: "きます" }, { id: "menikah", jp: "けっこんします" }, { id: "meninjau", jp: "けんがくします" }, { id: "meneliti", jp: "けんきゅうします" }, { id: "mengkopi", jp: "コピーします" }, { id: "berjalan-jalan (taman)", jp: "さんぽします" }, { id: "lembur (kerja)", jp: "ざんぎょうします" }, { id: "mengerjakan, berbuat", jp: "します" }, { id: "memperbaiki", jp: "しゅうりします" }, { id: "dinas keluar kota", jp: "しゅっちょうします" }, { id: "memperkenalkan", jp: "しょうかいします" }, { id: "makan (santap)", jp: "しょくじします" }, { id: "khawatir, cemas", jp: "しんぱいします" }, { id: "menjelaskan, menerangkan", jp: "せつめいします" }, { id: "mencuci (pakaian)", jp: "せんたくします" }, { id: "membersihkan (kamar)", jp: "そうじします" }, { id: "membawa, datang mangantar", jp: "つれてきます" }, { id: "menelepon", jp: "でんわします" }, { id: "pindah rumah", jp: "ひっこしします" }, { id: "belajar (bermatapelajaran)", jp: "べんきょうします" }, { id: "membawa, datang membawa", jp: "もってきます" }, { id: "memesan", jp: "よやくします" }, { id: "belajar di luar negeri", jp: "りゅうがくします" }, { id: "berlatih", jp: "れんしゅうします" }
+        ];
+
+        // State Game
+        let currentQuestion = {}, score = 0, answered = false, wrongAnswers = [], timerInterval = null, timeLeft = 15, quizPool = [], currentQuestionIndex = 0, selectedGroup = 1, currentName = "";
+
+        const appView = document.getElementById('appView');
+        const alertModal = document.getElementById('alertModal');
+        const finishModal = document.getElementById('finishModal');
+
+        // LocalStorage Helpers
+        function getHistory() { return JSON.parse(localStorage.getItem('tebak_jepang_history') || '[]'); }
+        function saveHistory(data) { localStorage.setItem('tebak_jepang_history', JSON.stringify(data)); }
+
+        // Router / View Manager
+        function showView(view, data = null) {
+            alertModal.classList.remove('active');
+            finishModal.classList.remove('active');
+            stopTimer();
+            let html = '';
+            
+            if (view === 'login') {
+                currentName = localStorage.getItem('tebak_jepang_name') || '';
+                html = `
+                    <h1>🌸 Tebak Katakana</h1>
+                    <p class="subtitle">Masuk untuk mulai belajar</p>
+                    <div class="form-group">
+                        <label>Masukkan Nama Kamu</label>
+                        <input type="text" id="nameInput" value="${currentName}" placeholder="Nama...">
+                    </div>
+                    <button class="btn" onclick="doLogin()">Mulai</button>
+                `;
+            } else if (view === 'groups') {
+                html = `
+                    <div class="header-nav">
+                        <div class="user-badge">👤 ${currentName}</div>
+                        <div>
+                            <a class="nav-link" onclick="showView('history')">Lihat Nilai</a>
+                            <a class="nav-link" onclick="logout()">Keluar</a>
+                        </div>
+                    </div>
+                    <h1>🌸 Pilih Kelompok</h1>
+                    <p class="subtitle">Pilih kelompok kosakata yang ingin kamu pelajari</p>
+                    <div class="group-grid">
+                        <div class="group-card" onclick="startQuiz(1)">
+                            <h3>Kelompok 1 (どうし 1)</h3>
+                            <p>70 Kosakata Kata Kerja Dasar</p>
+                        </div>
+                        <div class="group-card" onclick="startQuiz(2)">
+                            <h3>Kelompok 2 (どうし 2)</h3>
+                            <p>37 Kosakata Kata Kerja Lanjutan</p>
+                        </div>
+                        <div class="group-card" onclick="startQuiz(3)">
+                            <h3>Kelompok 3 (どうし 3)</h3>
+                            <p>27 Kosakata Kata Kerja Suru</p>
+                        </div>
+                    </div>
+                `;
+            } else if (view === 'quiz') {
+                const vocabData = selectedGroup === 1 ? group1 : (selectedGroup === 2 ? group2 : group3);
+                html = `
+                    <div class="header-nav">
+                        <div class="user-badge">👤 ${currentName}</div>
+                        <div>
+                            <a class="nav-link" onclick="showView('groups')">Ganti Kelompok</a>
+                        </div>
+                    </div>
+                    <h1>🌸 Tebak Kata Kerja</h1>
+                    <p class="subtitle">Kelompok ${selectedGroup}</p>
+                    <div class="score-board">
+                        <div>Benar: <span id="score">0</span></div>
+                        <div>Soal: <span id="question-num">1</span> / <span id="total-q"></span></div>
+                    </div>
+                    <div class="timer-bar" id="timer-bar">⏱ <span id="timer">15</span> detik</div>
+                    <div class="question-box">
+                        <p class="question-label">Terjemahan dari kata:</p>
+                        <div class="question-text" id="question">Makan</div>
+                    </div>
+                    <div class="options-grid" id="options"></div>
+                `;
+                appView.innerHTML = html;
+                startQuizEngine(vocabData);
+                return;
+            } else if (view === 'history') {
+                const history = getHistory();
+                let rows = '';
+                if (history.length === 0) {
+                    rows = `<tr><td colspan="5" class="empty">Belum ada riwayat permainan. Ayo main!</td></tr>`;
+                } else {
+                    history.slice().reverse().forEach((h, idx) => {
+                        rows += `
+                            <tr>
+                                <td>${history.length - idx}</td>
+                                <td><span style="background:#fce7f3; padding:4px 10px; border-radius:20px; color:var(--primary-dark); font-weight:700;">Kel ${h.group_type}</span></td>
+                                <td style="font-weight:800; color: var(--primary-dark);">${h.score}/${h.total}</td>
+                                <td style="font-size: 0.85rem; color: #64748b;">${h.played_at}</td>
+                                <td><button class="btn btn-success" style="padding:5px 10px; font-size:0.8rem;" onclick="showView('review', '${h.id}')">Lihat Salah</button></td>
+                            </tr>
+                        `;
+                    });
+                }
+                html = `
+                    <div class="header-nav">
+                        <div class="user-badge">👤 ${currentName}</div>
+                        <div><a class="nav-link" onclick="showView('groups')">Kembali</a></div>
+                    </div>
+                    <h1>📊 Riwayat Nilai</h1>
+                    <table>
+                        <thead><tr><th>No</th><th>Kelompok</th><th>Nilai</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <button class="btn" style="background:#fce7f3; color:var(--primary-dark);" onclick="clearHistory()">Hapus Riwayat</button>
+                `;
+            } else if (view === 'review') {
+                const history = getHistory();
+                const record = history.find(r => r.id === data);
+                if (!record) { showView('history'); return; }
+
+                let reviewHtml = '';
+                if (record.wrong_answers.length === 0) {
+                    reviewHtml = `<div class="empty" style="text-align: center; padding: 30px; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0; color: #10b981; font-weight: 600;">🎉 Sempurna! Kamu tidak menjawab salah sama sekali!</div>`;
+                } else {
+                    record.wrong_answers.forEach((wa, idx) => {
+                        reviewHtml += `
+                            <div class="review-item">
+                                <div class="question-row">${idx + 1}. ${wa.question}</div>
+                                <div class="answer-row">
+                                    <div>
+                                        <span class="label-tag">Jawaban Kamu (Salah)</span>
+                                        <span class="wrong-text">${wa.user_answer}</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span class="label-tag">Jawaban Benar</span>
+                                        <span class="correct-text">${wa.correct_answer}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                html = `
+                    <div class="header-nav">
+                        <div class="user-badge">👤 ${currentName}</div>
+                        <div><a class="nav-link" onclick="showView('history')">Kembali</a></div>
+                    </div>
+                    <h1>📝 Pembahasan</h1>
+                    <p class="subtitle">${record.played_at}</p>
+                    <div class="score-banner" style="background: #fce7f3; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; font-weight: 800; font-size: 1.2rem; color: var(--primary-dark);">
+                        Nilai: ${record.score} / ${record.total}
+                    </div>
+                    ${reviewHtml}
+                `;
+            }
+
+            appView.innerHTML = html;
+        }
+
+        function doLogin() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) { alert('Masukkan nama dulu!'); return; }
+            currentName = name;
+            localStorage.setItem('tebak_jepang_name', name);
+            showView('groups');
+        }
+
+        function logout() {
+            localStorage.removeItem('tebak_jepang_name');
+            currentName = '';
+            showView('login');
+        }
+
+        function clearHistory() {
+            if(confirm('Yakin mau hapus semua riwayat nilai?')) {
+                localStorage.removeItem('tebak_jepang_history');
+                showView('history');
+            }
+        }
+
+        function startQuiz(group) {
+            selectedGroup = group;
+            showView('quiz');
+        }
+
+        function startQuizEngine(vocabData) {
+            score = 0; wrongAnswers = []; currentQuestionIndex = 0;
+            quizPool = [...vocabData].sort(() => Math.random() - 0.5);
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= quizPool.length) { finishGame(); return; }
+            answered = false;
+            currentQuestion = quizPool[currentQuestionIndex];
+            document.getElementById('question').textContent = currentQuestion.id;
+            document.getElementById('question-num').textContent = currentQuestionIndex + 1;
+            document.getElementById('total-q').textContent = quizPool.length;
+            document.getElementById('score').textContent = score;
+
+            let options = [currentQuestion];
+            while(options.length < 4) {
+                let r = quizPool[Math.floor(Math.random() * quizPool.length)];
+                if(!options.includes(r)) options.push(r);
+            }
+            options = options.sort(() => Math.random() - 0.5);
+            
+            const optionsEl = document.getElementById('options');
+            optionsEl.innerHTML = '';
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option.jp;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsEl.appendChild(btn);
+            });
+            startTimer();
+        }
+
+        function checkAnswer(selectedOption, btn) {
+            if(answered) return;
+            answered = true;
+            stopTimer();
+
+            if(selectedOption.jp === currentQuestion.jp) {
+                btn.classList.add('correct');
+                score++;
+                document.getElementById('score').textContent = score;
+                currentQuestionIndex++;
+                setTimeout(loadQuestion, 1000);
+            } else {
+                btn.classList.add('wrong');
+                document.getElementById('alertIcon').textContent = "❌";
+                document.getElementById('alertTitle').textContent = "Jawaban Salah!";
+                document.getElementById('correctAnswer').textContent = currentQuestion.jp;
+                wrongAnswers.push({ question: currentQuestion.id, correct_answer: currentQuestion.jp, user_answer: selectedOption.jp });
+                setTimeout(() => alertModal.classList.add('active'), 500);
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 15;
+            document.getElementById('timer').textContent = timeLeft;
+            const timerBar = document.getElementById('timer-bar');
+            timerBar.classList.remove('warning');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 5) timerBar.classList.add('warning');
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() { clearInterval(timerInterval); }
+
+        function handleTimeout() {
+            if(answered) return;
+            answered = true;
+            wrongAnswers.push({ question: currentQuestion.id, correct_answer: currentQuestion.jp, user_answer: "Waktu Habis" });
+            document.getElementById('alertIcon').textContent = "⏰";
+            document.getElementById('alertTitle').textContent = "Waktu Habis!";
+            document.getElementById('correctAnswer').textContent = currentQuestion.jp;
+            setTimeout(() => alertModal.classList.add('active'), 300);
+        }
+
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            alertModal.classList.remove('active');
+            currentQuestionIndex++;
+            loadQuestion();
+        });
+
+        function finishGame() {
+            stopTimer();
+            document.getElementById('finalScore').textContent = score + " / " + quizPool.length;
+            
+            // Save to LocalStorage
+            const history = getHistory();
+            history.push({
+                id: 'game_' + Date.now(),
+                name: currentName,
+                score: score,
+                total: quizPool.length,
+                group_type: selectedGroup,
+                played_at: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+                wrong_answers: wrongAnswers
+            });
+            saveHistory(history);
+            
+            finishModal.classList.add('active');
+        }
+
+        // Init
+        if (!localStorage.getItem('tebak_jepang_name')) {
+            showView('login');
+        } else {
+            currentName = localStorage.getItem('tebak_jepang_name');
+            showView('groups');
+        }
+    </script>
+</body>
+</html>
